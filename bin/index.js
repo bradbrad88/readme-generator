@@ -1,10 +1,12 @@
+#!/usr/bin/env node
+
 const fs = require("fs").promises;
 const path = require("path");
 var argv = require("minimist")(process.argv.slice(2));
 const inquirer = require("inquirer");
 const simpleGit = require("simple-git");
 const GitUrlParse = require("git-url-parse");
-const generateMarkdown = require("./utils/generateMarkdown");
+const generateMarkdown = require("../lib/generateMarkdown");
 
 const git = simpleGit();
 
@@ -89,7 +91,8 @@ async function getProjectData() {
   const { value: name } = await git.getConfig("user.name");
   const urlInfo = parseGitUrl(url);
   const packageJSON = await getPackageJSONData();
-  return { ...urlInfo, ...packageJSON, email, name };
+  const title = process.cwd().split(path.sep).pop();
+  return { ...urlInfo, ...packageJSON, email, name, title };
 }
 
 async function fileExists(pathName) {
@@ -108,20 +111,20 @@ function iterateFileName(fileName) {
   return "README" + newIteration + ".md";
 }
 
-async function generateNewFileName(folder, fileName) {
+async function generateNewFileName(fileName) {
   let i = 0;
   let newFile = fileName;
   while (true) {
     newFile = iterateFileName(newFile);
-    const exists = await fileExists(path.resolve(folder, newFile));
+    const exists = await fileExists(path.resolve(newFile));
     if (!exists) return newFile;
     i++;
     if (i > 10) return null;
   }
 }
 
-async function handleFileConflict(folder, fileName) {
-  let filePath = path.resolve(folder, fileName);
+async function handleFileConflict(fileName) {
+  let filePath = path.resolve(fileName);
   const exists = await fileExists(filePath);
   if (!exists) return filePath;
   const { option } = await inquirer.prompt([
@@ -135,7 +138,7 @@ async function handleFileConflict(folder, fileName) {
   let newFile;
   switch (option) {
     case "Create new file":
-      newFile = await generateNewFileName(folder, fileName);
+      newFile = await generateNewFileName(fileName);
       break;
     case "Overwrite":
       newFile = fileName;
@@ -143,18 +146,13 @@ async function handleFileConflict(folder, fileName) {
     default:
       return null;
   }
-  return path.resolve(folder, newFile);
+  return path.resolve(newFile);
 }
 
 async function writeToFile(fileName, data) {
   try {
-    const folder = path.resolve(
-      "generated-readme",
-      data.title.trim().toLowerCase().replace(" ", "-")
-    );
-    const filePath = await handleFileConflict(folder, fileName);
+    const filePath = await handleFileConflict(fileName);
     if (!filePath) return console.log("Application cancelled");
-    await fs.mkdir(folder, { recursive: true });
     await fs.writeFile(filePath, data.body, { encoding: "utf-8" });
   } catch (error) {
     console.log(error);
@@ -162,11 +160,14 @@ async function writeToFile(fileName, data) {
 }
 
 async function init() {
-  const data = await getProjectData();
-  const questions = argv.y ? filterQuestions(data) : provideDefaultsToQuestions(data);
+  const projectData = await getProjectData();
+  const questions = argv.y
+    ? filterQuestions(projectData)
+    : provideDefaultsToQuestions(projectData);
   const answers = await inquirer.prompt(questions);
-  const markdown = generateMarkdown({ ...answers, ...data });
-  writeToFile("README.md", { title: answers.title, body: markdown });
+  const consolidatedData = { ...projectData, ...answers };
+  const markdown = generateMarkdown(consolidatedData);
+  writeToFile("README.md", { title: consolidatedData.title, body: markdown });
 }
 
 init();
