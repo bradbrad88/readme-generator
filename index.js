@@ -76,12 +76,14 @@ async function writeToFile(fileName, data) {
 
 async function init() {
   const answers = await inquirer.prompt([
+    { type: "input", name: "username", message: "Remote repository username:" },
+    { type: "input", name: "email", message: "Email address:" },
     { type: "input", name: "title", message: "Application Name" },
     { type: "input", name: "description", message: "Application description:" },
     {
       type: "list",
       name: "license",
-      message: "Select applicable license",
+      message: "Select applicable license:",
       choices: [
         "MIT License",
         "GNU AGPLv3",
@@ -95,7 +97,29 @@ async function init() {
     {
       type: "input",
       name: "licenseDescription",
-      message: "Provide license/copyright description",
+      message: "Provide license/copyright description:",
+    },
+    {
+      type: "input",
+      name: "installation",
+      message: "Commands required to install application:",
+      default: "npm i",
+    },
+    {
+      type: "input",
+      name: "usage",
+      message: "Provide usage information:",
+    },
+    {
+      type: "input",
+      name: "contributing",
+      message: "Provide information on how a developer may contribute to the project:",
+    },
+    {
+      type: "input",
+      name: "tests",
+      message: "Commands required to run tests:",
+      default: "npm test",
     },
   ]);
   const markdown = generateMarkdown(answers);

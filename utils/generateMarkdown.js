@@ -25,19 +25,39 @@ ${data.description}
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
-- [Credits](#credits)
 - [License](#license)
+- [Contributing](#contributing)
+- [Tests](#tests)
+- [Questions](#questions)
 
 ## Installation
+To install necessary dependencies, run the following command:
+\`\`\`bash
+${data.installation}
+\`\`\`
 
 ## Usage
-
-Lorem, ipsum dolor sit amet consectetur adipisicing elit. Amet vitae aut, laboriosam repellat iusto doloribus, vero exercitationem sed aperiam repellendus quas id voluptate ipsam unde 
-
-## Credits
+${data.usage}
 
 ## License
 ${data.licenseDescription}
+
+## Contributing
+${data.contributing}
+
+## Tests
+To run tests, run the following command:
+\`\`\`bash
+${data.tests}
+\`\`\`
+
+## Questions
+For any questions about the project, please raise an issue at [this issues page](${new URL(
+    data.username + "/" + data.repository + "/issues",
+    "https://github.com"
+  )})
+For any further questions you can contact me [here](${data.email})
+
 `;
 }
 
