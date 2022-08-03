@@ -24,12 +24,10 @@ function iterateFileName(fileName) {
 async function generateNewFileName(folder, fileName) {
   let i = 0;
   let newFile = fileName;
-  console.log(newFile, fileName);
   while (true) {
     newFile = iterateFileName(newFile);
     const exists = await fileExists(path.resolve(folder, newFile));
     if (!exists) return newFile;
-    console.log(exists, newFile);
     i++;
     if (i > 10) return null;
   }
@@ -79,6 +77,26 @@ async function writeToFile(fileName, data) {
 async function init() {
   const answers = await inquirer.prompt([
     { type: "input", name: "title", message: "Application Name" },
+    { type: "input", name: "description", message: "Application description:" },
+    {
+      type: "list",
+      name: "license",
+      message: "Select applicable license",
+      choices: [
+        "MIT License",
+        "GNU AGPLv3",
+        "GNU GPLv3",
+        "GNU LGPLv3",
+        "Mozilla Public License 2.0",
+        "Apache License 2.0",
+        "Boost Software License 1.0",
+      ],
+    },
+    {
+      type: "input",
+      name: "licenseDescription",
+      message: "Provide license/copyright description",
+    },
   ]);
   const markdown = generateMarkdown(answers);
   writeToFile("README.md", { title: answers.title, body: markdown });
