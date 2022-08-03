@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require("fs").promises;
+const ff = require("fs");
 const path = require("path");
 var argv = require("minimist")(process.argv.slice(2));
 const inquirer = require("inquirer");
@@ -9,6 +10,21 @@ const GitUrlParse = require("git-url-parse");
 const generateMarkdown = require("../lib/generateMarkdown");
 
 const git = simpleGit();
+
+git.checkIsRepo().then(res => {
+  if (!res) {
+    exitEarly();
+  }
+});
+
+if (!ff.existsSync("package.json")) {
+  exitEarly();
+}
+
+function exitEarly() {
+  console.error("README Generator should be run in the root folder of a git/npm repository.");
+  process.exit(1);
+}
 
 const questions = [
   { type: "input", name: "name", message: "Your name:" },
