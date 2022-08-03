@@ -1,5 +1,6 @@
 const fs = require("fs").promises;
 const path = require("path");
+var argv = require("minimist")(process.argv.slice(2));
 const inquirer = require("inquirer");
 const simpleGit = require("simple-git");
 const GitUrlParse = require("git-url-parse");
@@ -54,6 +55,13 @@ const questions = [
 function filterQuestions(data) {
   const provided = Object.keys(data);
   return questions.filter(question => !provided.includes(question.name));
+}
+
+function provideDefaultsToQuestions(data) {
+  return questions.map(question => ({
+    ...question,
+    default: data[question.name] ? data[question.name] : question.default,
+  }));
 }
 
 function parseGitUrl(url) {
@@ -155,7 +163,7 @@ async function writeToFile(fileName, data) {
 
 async function init() {
   const data = await getProjectData();
-  const questions = filterQuestions(data);
+  const questions = argv.y ? filterQuestions(data) : provideDefaultsToQuestions(data);
   const answers = await inquirer.prompt(questions);
   const markdown = generateMarkdown({ ...answers, ...data });
   writeToFile("README.md", { title: answers.title, body: markdown });
