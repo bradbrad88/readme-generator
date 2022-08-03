@@ -4,7 +4,7 @@
   "description": "",
   "main": "./bin/index.js",
   "bin": {
-    "rmgen": "./bin/index.js"
+    "readme": "./bin/index.js"
   },
   "scripts": {
     "start": "node index.js",
