@@ -1,8 +1,22 @@
 // TODO: Create a function that returns a license badge based on which license is passed in
 // If there is no license, return an empty string
-function renderLicenseBadge(license) {
+function renderLicenseBadge({ license }) {
   const url = new URL(`badge/License-${license}-blue`, "https://img.shields.io").toString();
   return `[![License](${url})](${url})`;
+}
+
+function renderVersionBadge({ version }) {
+  const url = new URL(`badge/Version-${version}-blue`, "https://img.shields.io").toString();
+  return `[![Version](${url})](${url})`;
+}
+
+function renderLanguageBadge({ username, repository }) {
+  const url = new URL(
+    `github/languages/top/${username}/${repository}`,
+    "https://img.shields.io"
+  );
+  url.searchParams = new URLSearchParams("style", "flat-square");
+  return `![Github Top Language](${url.toString()})`;
 }
 
 // TODO: Create a function that returns the license link
@@ -17,7 +31,9 @@ function renderLicenseSection(license) {}
 function generateMarkdown(data) {
   return `# ${data.title}
 
-${renderLicenseBadge(data.license)} 
+${renderLicenseBadge(data)} 
+${renderLanguageBadge(data)}
+${renderVersionBadge(data)}
 
 ## Description
 ${data.description}
