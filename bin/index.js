@@ -9,14 +9,17 @@ const simpleGit = require("simple-git");
 const GitUrlParse = require("git-url-parse");
 const generateMarkdown = require("../lib/generateMarkdown");
 
+// Create git object for checking if app is executed in a git repository and accessing config (name, email, origin-url)
 const git = simpleGit();
 
+// If app is not launched in a git repo then quit
 git.checkIsRepo().then(res => {
   if (!res) {
     exitEarly();
   }
 });
 
+// If app is not launched in root folder of npm project then quit
 if (!ff.existsSync("package.json")) {
   exitEarly();
 }
@@ -26,6 +29,7 @@ function exitEarly() {
   process.exit(1);
 }
 
+// Questions to prompt user
 const questions = [
   { type: "input", name: "name", message: "Your name:" },
   { type: "input", name: "email", message: "Your email address:" },
@@ -70,11 +74,14 @@ const questions = [
   },
 ];
 
+// Filter out questions that the program was already able to gather data for
+// Only runs if program run with -y flag
 function filterQuestions(data) {
   const provided = Object.keys(data);
   return questions.filter(question => !provided.includes(question.name));
 }
 
+// Dynamically add default answers to questions based on information the program could find through git, package.json and directory structure
 function provideDefaultsToQuestions(data) {
   return questions.map(question => ({
     ...question,
@@ -82,12 +89,14 @@ function provideDefaultsToQuestions(data) {
   }));
 }
 
+// Obtain source, repository and username of remote origin from url
 function parseGitUrl(url) {
   if (!url) return {};
   const { source, name, owner } = GitUrlParse(url);
   return { source, repository: name, username: owner };
 }
 
+// Obtain version and license information from package.json file
 async function getPackageJSONData() {
   const package = await fs.readFile("package.json");
   const json = JSON.parse(package.toString());
@@ -101,6 +110,7 @@ async function getPackageJSONData() {
   return data;
 }
 
+// Run through a series of functions to automatically obtain data and save unneccessary user input
 async function getProjectData() {
   const { value: url } = await git.getConfig("remote.origin.url");
   const { value: email } = await git.getConfig("user.email");
@@ -111,6 +121,7 @@ async function getProjectData() {
   return { ...urlInfo, ...packageJSON, email, name, title };
 }
 
+// Util function to check if a file exists
 async function fileExists(pathName) {
   try {
     return await fs.stat(pathName);
@@ -119,6 +130,7 @@ async function fileExists(pathName) {
   }
 }
 
+// In the case of filename conflict, this function will take a string of README####.md and iterate it, eg: README.md => README01.md => README02.md
 function iterateFileName(fileName) {
   const readme = fileName.split(".")[0];
   const iteration = parseInt(readme.split("README")[1] || 0);
@@ -127,6 +139,7 @@ function iterateFileName(fileName) {
   return "README" + newIteration + ".md";
 }
 
+// Return a README##.md filepath that doesn't conflict with any files in directory
 async function generateNewFileName(fileName) {
   let i = 0;
   let newFile = fileName;
@@ -139,6 +152,7 @@ async function generateNewFileName(fileName) {
   }
 }
 
+// Provide the user with options on how to handle a README.md file that already exists
 async function handleFileConflict(fileName) {
   let filePath = path.resolve(fileName);
   const exists = await fileExists(filePath);
@@ -165,6 +179,7 @@ async function handleFileConflict(fileName) {
   return path.resolve(newFile);
 }
 
+// Create the README file
 async function writeToFile(fileName, data) {
   try {
     const filePath = await handleFileConflict(fileName);
@@ -175,8 +190,14 @@ async function writeToFile(fileName, data) {
   }
 }
 
+// Initialise app
 async function init() {
+  // Get data automatically from package.json, git config variables and root directory
   const projectData = await getProjectData();
+  // Create questions array based off the global constant 'questions'
+  // Edited based on user input when app initialised
+  // If -y flag is used, then filter out questions that we could already gather data for
+  // Default mode will leave all questions in but add default answers to information we were able to gather
   const questions = argv.y
     ? filterQuestions(projectData)
     : provideDefaultsToQuestions(projectData);
