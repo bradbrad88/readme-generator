@@ -79,10 +79,16 @@ function filterQuestions(data) {
 
 // Dynamically add default answers to questions based on information the program could find through git, package.json and directory structure
 function provideDefaultsToQuestions(data) {
-  return questions.map(question => ({
-    ...question,
-    default: data[question.name] ? data[question.name] : question.default,
-  }));
+  return questions.map(question => {
+    const defaultValue = data[question.name] ? data[question.name] : question.default;
+    if (Array.isArray(question.choices) && data[question.name]) {
+      question.choices = [data[question.name], ...question.choices];
+    }
+    return {
+      ...question,
+      default: defaultValue,
+    };
+  });
 }
 
 // Obtain source, repository and username of remote origin from url
