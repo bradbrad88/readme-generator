@@ -1,13 +1,13 @@
 {
   "name": "readme-generator",
   "version": "1.0.0",
-  "description": "",
+  "description": "A command line utility tool for generating README.md files",
   "main": "./bin/index.js",
   "bin": {
     "readme": "./bin/index.js"
   },
   "scripts": {
-    "start": "node index.js",
+    "start": "node bin/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
