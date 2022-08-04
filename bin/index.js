@@ -12,22 +12,18 @@ const generateMarkdown = require("../lib/generateMarkdown");
 // Create git object for checking if app is executed in a git repository and accessing config (name, email, origin-url)
 const git = simpleGit();
 
-// If app is not launched in a git repo then quit
-git.checkIsRepo().then(res => {
-  if (!res) {
-    exitEarly();
-  }
+// Promise a boolean value on whether current directory is in a git repository
+let isGitRepo = new Promise(resolve => {
+  // If app is not launched in a git repo then quit
+  git.checkIsRepo().then(res => {
+    resolve(res);
+  });
 });
 
-// If app is not launched in root folder of npm project then quit
-if (!ff.existsSync("package.json")) {
-  exitEarly();
-}
-
-function exitEarly() {
-  console.error("README Generator should be run in the root folder of a git/npm repository.");
-  process.exit(1);
-}
+// Promise a boolean value on whether we're in the root directory of npm repo by checking for package.json file
+let isNpmRepo = new Promise(resolve => {
+  resolve(!ff.existsSync("package.json"));
+});
 
 // Questions to prompt user
 const questions = [
@@ -90,10 +86,18 @@ function provideDefaultsToQuestions(data) {
 }
 
 // Obtain source, repository and username of remote origin from url
-function parseGitUrl(url) {
-  if (!url) return {};
-  const { source, name, owner } = GitUrlParse(url);
+function parseGitUrl(gitData) {
+  if (!gitData.url) return {};
+  const { source, name, owner } = GitUrlParse(gitData.url);
   return { source, repository: name, username: owner };
+}
+
+async function getGitData() {
+  if (!(await isGitRepo)) return {};
+  const { value: url } = await git.getConfig("remote.origin.url");
+  const { value: email } = await git.getConfig("user.email");
+  const { value: name } = await git.getConfig("user.name");
+  return { url, email, name };
 }
 
 // Obtain version and license information from package.json file
@@ -107,18 +111,25 @@ async function getPackageJSONData() {
   if (json.license) {
     data.license = json.license;
   }
+  if (json.description) {
+    data.description = json.description;
+  }
   return data;
+}
+
+function formatFolderAsTitle(title = "") {
+  const titleWithSpaces = title.replace(/[\W_]/gi, " ");
+  const regex = /^(.)|(?<=\s)./gi;
+  return titleWithSpaces.replace(regex, val => val.toUpperCase());
 }
 
 // Run through a series of functions to automatically obtain data and save unneccessary user input
 async function getProjectData() {
-  const { value: url } = await git.getConfig("remote.origin.url");
-  const { value: email } = await git.getConfig("user.email");
-  const { value: name } = await git.getConfig("user.name");
-  const urlInfo = parseGitUrl(url);
   const packageJSON = await getPackageJSONData();
-  const title = process.cwd().split(path.sep).pop();
-  return { ...urlInfo, ...packageJSON, email, name, title };
+  const gitData = await getGitData();
+  const urlInfo = parseGitUrl(gitData);
+  const title = formatFolderAsTitle(process.cwd().split(path.sep).pop());
+  return { ...packageJSON, ...urlInfo, ...gitData, title };
 }
 
 // Util function to check if a file exists
