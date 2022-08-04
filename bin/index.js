@@ -21,9 +21,7 @@ let isGitRepo = new Promise(resolve => {
 });
 
 // Promise a boolean value on whether we're in the root directory of npm repo by checking for package.json file
-let isNpmRepo = new Promise(resolve => {
-  resolve(!ff.existsSync("package.json"));
-});
+let isNpmRepo = new Promise(resolve => resolve(ff.existsSync("package.json")));
 
 // Questions to prompt user
 const questions = [
@@ -108,19 +106,24 @@ async function getGitData() {
 
 // Obtain version and license information from package.json file
 async function getPackageJSONData() {
+  if (!(await isNpmRepo)) return {};
   const package = await fs.readFile("package.json");
-  const json = JSON.parse(package.toString());
-  const data = {};
-  if (json.version) {
-    data.version = json.version;
+  try {
+    const json = JSON.parse(package.toString());
+    const data = {};
+    if (json.version) {
+      data.version = json.version;
+    }
+    if (json.license) {
+      data.license = json.license;
+    }
+    if (json.description) {
+      data.description = json.description;
+    }
+    return data;
+  } catch (error) {
+    return {}
   }
-  if (json.license) {
-    data.license = json.license;
-  }
-  if (json.description) {
-    data.description = json.description;
-  }
-  return data;
 }
 
 function formatFolderAsTitle(title = "") {
