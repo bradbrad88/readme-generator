@@ -8,6 +8,7 @@ const inquirer = require("inquirer");
 const simpleGit = require("simple-git");
 const GitUrlParse = require("git-url-parse");
 const generateMarkdown = require("../lib/generateMarkdown");
+const licenses = require("../lib/licenses");
 
 // Create git object for checking if app is executed in a git repository and accessing config (name, email, origin-url)
 const git = simpleGit();
@@ -34,15 +35,8 @@ const questions = [
     type: "list",
     name: "license",
     message: "Select applicable license:",
-    choices: [
-      "MIT License",
-      "GNU AGPLv3",
-      "GNU GPLv3",
-      "GNU LGPLv3",
-      "Mozilla Public License 2.0",
-      "Apache License 2.0",
-      "Boost Software License 1.0",
-    ],
+    // Get the keys from lib/licences.js module
+    choices: Object.keys(licenses),
   },
   {
     type: "input",
@@ -78,9 +72,23 @@ function filterQuestions(data) {
 // Dynamically add default answers to questions based on information the program could find through git, package.json and directory structure
 function provideDefaultsToQuestions(data) {
   return questions.map(question => {
+    // Default value is dynamic - it may be gathered from git.config or package.json
     const defaultValue = data[question.name] ? data[question.name] : question.default;
+    // Arrange choices based on default value - if default not already in choices, add it, else sort so it is the top choice
     if (Array.isArray(question.choices) && data[question.name]) {
-      question.choices = [data[question.name], ...question.choices];
+      // Check to see if the default value exists as a choice already
+      if (
+        question.choices
+          .map(choice => choice.toLowerCase())
+          .includes(defaultValue.toLowerCase())
+      ) {
+        // Mutating original question.choices array
+        // Sort it to be the top choice
+        question.choices.sort(a => (a.toLowerCase() === defaultValue.toLowerCase() ? -1 : 0));
+      } else {
+        // Add it to be the top choice
+        question.choices.unshift(data[question.name]);
+      }
     }
     return {
       ...question,
@@ -96,6 +104,7 @@ function parseGitUrl(gitData) {
   return { source, repository: name, username: owner };
 }
 
+// Use simple-git module to obtain data from the git repository
 async function getGitData() {
   if (!(await isGitRepo)) return {};
   const { value: url } = await git.getConfig("remote.origin.url");
@@ -122,7 +131,7 @@ async function getPackageJSONData() {
     }
     return data;
   } catch (error) {
-    return {}
+    return {};
   }
 }
 
