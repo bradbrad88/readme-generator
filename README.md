@@ -1,12 +1,18 @@
 # readme-generator
 
-![License](https://img.shields.io/badge/License-ISC-blue)
+![License](https://img.shields.io/badge/License-MIT-blue)
 ![Github Top Language](https://img.shields.io/github/languages/top/bradbrad88/readme-generator)
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue)
 
 ## Description
 
 A command line utility tool for creating structured and consistent README.md files for Node libraries.
+
+[Github Repository](https://github.com/bradbrad88/readme-generator)
+
+[Demonstration video](https://drive.google.com/file/d/1mZ8RowwWMbHdIVMm4jkO7451-gK31Dgw/view?usp=sharing)
+
+![screenshot](./assets/screenshot.png)
 
 ## Table of Contents
 
@@ -22,7 +28,7 @@ A command line utility tool for creating structured and consistent README.md fil
 To install, run the following command:
 
 ```properties
-npm i -g readme-generator
+npm i -g https://github.com/bradbrad88/readme-generator
 ```
 
 ## Usage
@@ -45,11 +51,13 @@ It will reduce the number of questions prompted and attempt to gather data autom
 
 ## License
 
-Project license: ISC. Copyright Brad Teague 2022
+Project license: MIT. Copyright Brad Teague 2022.
 
 ## Contributing
 
-This project will likely remain private and not maintained, however if you have a great idea that you want to contribute then feel free to contact me directly [here](b_rad88@live.com)
+If you have a feature request, please make a pull request [here](https://github.com/bradbrad88/readme-generator) or add it as an issue [here](https://github.com/bradbrad88/readme-generator/issues).
+
+If you have a bug to report, please create an issue [here](https://github.com/bradbrad88/readme-generator/issues).
 
 ## Questions
 
