@@ -1,6 +1,6 @@
 # readme-generator
 
-![License](https://img.shields.io/badge/License-MIT-blue)
+[![License](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/licenses/MIT)
 ![Github Top Language](https://img.shields.io/github/languages/top/bradbrad88/readme-generator)
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue)
 
@@ -51,7 +51,7 @@ It will reduce the number of questions prompted and attempt to gather data autom
 
 ## License
 
-Project license: MIT. Copyright Brad Teague 2022.
+Project license: [MIT](https://opensource.org/licenses/MIT). Copyright Brad Teague 2022.
 
 ## Contributing
 
